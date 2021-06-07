@@ -1,0 +1,24 @@
+{
+    "python.terminal.activateEnvironment": false,
+    "python.pythonPath": "${env:HOME}/.zerynth2/sys/python/bin/python",
+    "python.autoComplete.extraPaths": [
+        "${env:HOME}/.zerynth2/dist/r2.6.3/stdlib/wireless",
+        "${env:HOME}/.zerynth2/dist/r2.6.3/stdlib/crypto",
+        "${env:HOME}/.zerynth2/dist/r2.6.3/stdlib/bignum",
+        "${env:HOME}/.zerynth2/dist/r2.6.3/stdlib",
+        "${env:HOME}/.zerynth2/dist/r2.6.3/libs/official/zerynth",
+        "${env:HOME}/.zerynth2/dist/r2.6.3/libs/official"
+    ],
+    "python.linting.pylintArgs": [
+        "--rcfile",
+        "${env:HOME}/.zerynth2/dist/sys/cli/linter/zlintrc"
+    ],
+    "python.analysis.extraPaths": [
+        "${env:HOME}/.zerynth2/dist/r2.6.3/stdlib/wireless",
+        "${env:HOME}/.zerynth2/dist/r2.6.3/stdlib/crypto",
+        "${env:HOME}/.zerynth2/dist/r2.6.3/stdlib/bignum",
+        "${env:HOME}/.zerynth2/dist/r2.6.3/stdlib",
+        "${env:HOME}/.zerynth2/dist/r2.6.3/libs/official/zerynth",
+        "${env:HOME}/.zerynth2/dist/r2.6.3/libs/official"
+    ]
+}
