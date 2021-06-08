@@ -40,7 +40,8 @@ def find_by_address_bytes(start_address, size_bytes):
     ff.seek(0,streams.SEEK_SET)
     
     n = ff.read_int()
-    
+    print('find_by_address_bytes => bytes value is ', n)
+
     paramsb = bytearray()                       # create an array to hold flash
     for i in range(4,n+4):                     # copy to array from flash
         paramsb.append( ff[i]  )
@@ -64,6 +65,11 @@ def write_value(json, start_address, size):
     
     
 print('---------- iniciando programa ---------------')
+
+############### so pra zerar a quantidade
+quantity_tuple = (0,)
+write_value(json.dumps(quantity_tuple), quantity_address, quantity_size_bytes)
+find_by_address_bytes(quantity_address, quantity_size_bytes)
 
 sleep(1000)
 
@@ -123,17 +129,52 @@ t = (
 write_value(json.dumps(t), start_address_to_save(quantity), element_size_bytes)
 find_by_address_bytes(start_address_to_save(quantity), element_size_bytes)  
 
-# print('-------- vamos tentar ler os dados -------')
+t = (
+  501,
+  100,
+  279,
+  0,
+  1623024306879
+)
+
+write_value(json.dumps(t), start_address_to_save(2), element_size_bytes)
+find_by_address_bytes(start_address_to_save(2), element_size_bytes)  
+
+write_value(json.dumps(t), start_address_to_save(3), element_size_bytes)
+find_by_address_bytes(start_address_to_save(3), element_size_bytes)  
+
+write_value(json.dumps(t), start_address_to_save(4), element_size_bytes)
+find_by_address_bytes(start_address_to_save(4), element_size_bytes)  
+
+write_value(json.dumps(t), start_address_to_save(5), element_size_bytes)
+find_by_address_bytes(start_address_to_save(5), element_size_bytes)  
+
+write_value(json.dumps(t), start_address_to_save(6), element_size_bytes)
+find_by_address_bytes(start_address_to_save(6), element_size_bytes)  
+
+print('-------- vamos tentar ler os dados -------')
+# find_by_address_bytes(start_address_to_save(0), element_size_bytes)  
+# find_by_address_bytes(start_address_to_save(0), element_size_bytes)  
+
+find_by_address_bytes(start_address_to_save(1), element_size_bytes)  
+find_by_address_bytes(start_address_to_save(2), element_size_bytes)  
+find_by_address_bytes(start_address_to_save(3), element_size_bytes)  
+find_by_address_bytes(start_address_to_save(4), element_size_bytes)  
+find_by_address_bytes(start_address_to_save(5), element_size_bytes)  
+find_by_address_bytes(start_address_to_save(6), element_size_bytes)  
+
+
+for n in range(1, 7):
+    find_by_address_bytes(start_address_to_save(n), element_size_bytes)  
+
+# find_by_address_bytes(start_address_to_save(1), element_size_bytes)  
 
 # for q in range(quantity+1):
 #     print(q)
 #     find_by_address_bytes(start_address_to_save(q), element_size_bytes)  
 # find_by_address_bytes(0x00310284, element_size_bytes)  
 
-############### so pra zerar a quantidade
-quantity_tuple = (0,)
-write_value(json.dumps(quantity_tuple), quantity_address, quantity_size_bytes)
-find_by_address_bytes(quantity_address, quantity_size_bytes)
+
 
 
 
