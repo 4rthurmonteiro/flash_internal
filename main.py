@@ -1,190 +1,207 @@
-################################################################################
-# iflash
-#
-# Created: 2016-03-22 15:54:21.232663
-#
-################################################################################
-
 import streams
 import json
 import flash
-import mcu
 
 streams.serial()
 
-quantity_size_bytes = 10
+quantity_size_bytes = 32
 quantity_address = 3211264
 quantity = -1
 element_size_bytes = 34
+quantity_max_bytes = 10
 
-# def quantity_address():
-#     return format(3211264, '#04x')
 
 def start_address_to_save(number_of_items_saved: int):
     initial_address = 3211264
-    quantity_size = 10
+    quantity_size = 32
     package_max_size = 34
 
-    return (initial_address + quantity_size) + (package_max_size * number_of_items_saved)
-
-
+    result =  (initial_address + quantity_size) + (package_max_size * number_of_items_saved)
     
-# print(quantity_address == 0x00310000)    
-print('---------- iniciando programa ---------------')
-
-sleep(1000)
-
-while quantity < 6:
-
-    print('Primeiro vamos consultar a quantidade de tuplas salvas:')
+    print('start_address_to_save =>', hex(result))
     
+    return result
 
-    
-    ff = flash.FlashFileStream(quantity_address, quantity_size_bytes)
+def check_address_bytes(start_address, size_bytes):
+    ff = flash.FlashFileStream(start_address, size_bytes)
     ff.seek(0,streams.SEEK_SET)
     
     n = ff.read_int()
     # ff.flush()
     ff.close()
     
-    sleep(1000)
-
-    if n > 10:
-        print('Quantidade ainda nao iniciada (n igual a', n ,') vamos iniciar...')
-        ff = flash.FlashFileStream(quantity_address, quantity_size_bytes)
-        quantity_tuple = (0,)
-        quantity_ds = json.dumps(quantity_tuple)
-        ff.write(len(quantity_ds))
-        ff.write(quantity_ds)
-        ff.flush()
-        ff.seek(0,streams.SEEK_SET)
-        new_n = ff.read_int()
-        print('new n igual a => ', new_n )
-        paramsb = bytearray()                       # create an array to hold flash
-        for i in range(4,new_n+4):                     # copy to array from flash
-            paramsb.append( ff[i]  )
-        paramss = str( paramsb )                        # convert to a string 
-        paramsj = json.loads( paramss )   
-        print('ds after decode',paramsj) # convert to JSON
-        quantity = paramsj[0]
+    print('check_bytes => return is ', n)
     
-        ff.close()
-        sleep(1000)
-
-        # mcu.reset()
-        
-    else:
-        ff = flash.FlashFileStream(quantity_address, quantity_size_bytes)
-        ff.seek(0,streams.SEEK_SET)
-        old_n = ff.read_int()
-        print('old n igual a => ', old_n )
-        paramsb = bytearray()                       # create an array to hold flash
-        for i in range(4,n+4):                     # copy to array from flash
-            paramsb.append( ff[i]  )
-        paramss = str( paramsb )                        # convert to a string 
-        paramsj = json.loads( paramss )   
-        print('ds after decode',paramsj)
-        quantity = paramsj[0]
-        ff.close()
-        sleep(1000)
-
-        
-    print('quantidade => ',quantity)   
-    
-    print('--------- Temos a quantidade salva, agora vamos salvar de no prox espaco livre ---------')
-    
-    # esse valor vira dos sensores e do calculo da hora
-    t = (
-      439,
-      100,
-      279,
-      0,
-      1623024306879
-    )
-    
-    ds = json.dumps(t)
-    
-    print('ds before save in buffer =>', ds)
-    print('ds len before save in buffer =>', len(ds))
-    
-    ff = flash.FlashFileStream(start_address_to_save(quantity), element_size_bytes)
+    return n
     
     
-    # save length and json to flash
-    ff.write(len(ds))
-    ff.write(ds)
+def find_by_address_bytes(start_address, size_bytes):
+    ff = flash.FlashFileStream(start_address, size_bytes)
+    ff.seek(0,streams.SEEK_SET)
     
-    ff.flush()
+    n = ff.read_int()
     
-    ff.seek(0, streams.SEEK_SET)
-    
-    print("reading flash file")
-    
-    n_2 = ff.read_int()
-    
-    
-    
-    print('n_2 after save in buffer =>', n_2)
-    
-    # do a few checks on validity of size which I have omitted
     paramsb = bytearray()                       # create an array to hold flash
-    for i in range(4,n_2+4):                     # copy to array from flash
+    for i in range(4,n+4):                     # copy to array from flash
         paramsb.append( ff[i]  )
     paramss = str( paramsb )                        # convert to a string 
-    paramsj = json.loads( paramss )                 # convert to JSON
-    
-    
-    print('ds after decode',paramsj)
+    paramsj = json.loads( paramss )   
     
     ff.close()
-    sleep(1000)
     
+    print('find_by_address_bytes => return is ', paramsj)
     
-    if 32 > n_2 > 28:
+    return paramsj    
     
-        print('-------- agora vamos atualizar a quantidade --------')
-        
-        quantity = quantity + 1
-        
-        ff = flash.FlashFileStream(quantity_address, quantity_size_bytes)
-        
-        quantity_tuple = (quantity,)
-        
-        quantity_ds = json.dumps(quantity_tuple)
-        ff.write(len(quantity_ds))
-        ff.write(quantity_ds)
-        ff.flush()
-        ff.close()        
-    
-
-print('--------- vamos ler os dados salvos --------')
-
-counter = 0 
-
-while counter != quantity:
-    ff = flash.FlashFileStream(start_address_to_save(counter), element_size_bytes)
-    counter = counter + 1
-    
-    print("reading flash file")
-    ff.seek(0, streams.SEEK_SET)
-    n_3 = ff.read_int()
-    
-    
-    
-    print('n_3 after save in buffer =>', n_3)
-    
-    # # do a few checks on validity of size which I have omitted
-    # paramsb = bytearray()                       # create an array to hold flash
-    # for i in range(4,n_3+4):                     # copy to array from flash
-    #     paramsb.append( ff[i]  )
-    # paramss = str( paramsb )                        # convert to a string 
-    # paramsj = json.loads( paramss )                 # convert to JSON
-    
-    
-    # print('ds after decode',paramsj)
-    
+def write_value(json, start_address, size):
+    ff = flash.FlashFileStream(start_address, size)
+    ll_1 = ff.write(len(json))
+    ll_2 = ff.write(json)
+    ff.flush()
     ff.close()
+    
+    print('write_value => return len object: ', ll_1, ' return object:', ll_2)
+    
+    
+print('---------- iniciando programa ---------------')
+
+sleep(1000)
+
+# while quantity < 2:
+
+print('Primeiro vamos consultar a quantidade de tuplas salvas:')
+
+quantity_bytes = check_address_bytes(quantity_address, quantity_size_bytes)
+
+sleep(1000)
+
+if quantity_bytes > quantity_max_bytes:
+    quantity = 0
+    quantity_tuple = (quantity,)
+    write_value(json.dumps(quantity_tuple), quantity_address, quantity_size_bytes)
+
     sleep(1000)
+else:
+    quantity_tuple = find_by_address_bytes(quantity_address, quantity_size_bytes)
+    quantity = quantity_tuple[0]
+    sleep(1000)
+
+        
+print('quantidade => ',quantity)   
+    
+print('--------- Temos a quantidade salva, agora vamos salvar de no prox espaco livre ---------')
+#     # print('mockando a quantidade sempre zer')
+
+# esse valor vira dos sensores e do calculo da hora
+t = (
+  439,
+  100,
+  279,
+  0,
+  1623024306879
+)
+
+write_value(json.dumps(t), start_address_to_save(quantity), element_size_bytes)
+find_by_address_bytes(start_address_to_save(quantity), element_size_bytes)    
+
+print('---- update quantity ----')
+
+quantity = quantity + 1
+
+quantity_tuple = (quantity,)
+write_value(json.dumps(quantity_tuple), quantity_address, quantity_size_bytes)
+find_by_address_bytes(quantity_address, quantity_size_bytes)
+
+t = (
+  501,
+  100,
+  279,
+  0,
+  1623024306879
+)
+
+write_value(json.dumps(t), start_address_to_save(quantity), element_size_bytes)
+find_by_address_bytes(start_address_to_save(quantity), element_size_bytes)  
+
+# print('-------- vamos tentar ler os dados -------')
+
+# for q in range(quantity+1):
+#     print(q)
+#     find_by_address_bytes(start_address_to_save(q), element_size_bytes)  
+# find_by_address_bytes(0x00310284, element_size_bytes)  
+
+############### so pra zerar a quantidade
+quantity_tuple = (0,)
+write_value(json.dumps(quantity_tuple), quantity_address, quantity_size_bytes)
+find_by_address_bytes(quantity_address, quantity_size_bytes)
+
+
+
+#     sleep(1000)
+    
+#     print('--- checando novamente')
+    
+#     ff = flash.FlashFileStream(start_address_to_save(quantity), element_size_bytes)
+#     ff.seek(0,streams.SEEK_SET)
+
+#     n_10 = ff.read_int()
+#     print(n_10)
+    
+#     paramsb = bytearray()                       # create an array to hold flash
+#     for i in range(4,n_10+4):                     # copy to array from flash
+#         paramsb.append( ff[i]  )
+#     paramss = str( paramsb )                        # convert to a string 
+#     paramsj = json.loads( paramss )                 # convert to JSON
+    
+    
+#     print('n_10 ds after decode',paramsj)
+    
+#     ff.close()
+    # if 32 > n_2 > 28:
+    
+    #     print('-------- agora vamos atualizar a quantidade --------')
+        
+    #     quantity = quantity + 1
+        
+    #     ff = flash.FlashFileStream(quantity_address, quantity_size_bytes)
+        
+    #     quantity_tuple = (quantity,)
+        
+    #     quantity_ds = json.dumps(quantity_tuple)
+    #     ff.write(len(quantity_ds))
+    #     ff.write(quantity_ds)
+    #     ff.flush()
+    #     ff.close()        
+    
+
+# print('--------- vamos ler os dados salvos --------')
+
+# counter = 0 
+
+# while counter != quantity:
+#     ff = flash.FlashFileStream(start_address_to_save(counter), element_size_bytes)
+#     counter = counter + 1
+    
+#     print("reading flash file")
+#     ff.seek(0, streams.SEEK_SET)
+#     n_3 = ff.read_int()
+    
+    
+    
+#     print('n_3 after save in buffer =>', n_3)
+    
+#     # # do a few checks on validity of size which I have omitted
+#     # paramsb = bytearray()                       # create an array to hold flash
+#     # for i in range(4,n_3+4):                     # copy to array from flash
+#     #     paramsb.append( ff[i]  )
+#     # paramss = str( paramsb )                        # convert to a string 
+#     # paramsj = json.loads( paramss )                 # convert to JSON
+    
+    
+#     # print('ds after decode',paramsj)
+    
+#     ff.close()
+#     sleep(1000)
     
 
     
